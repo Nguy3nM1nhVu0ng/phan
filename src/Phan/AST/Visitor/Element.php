@@ -162,6 +162,8 @@ class Element
                 return $visitor->visitSwitchList($this->node);
             case \ast\AST_TYPE:
                 return $visitor->visitType($this->node);
+            case \ast\AST_NULLABLE_TYPE:
+                return $visitor->visitNullableType($this->node);
             case \ast\AST_UNARY_MINUS:
                 return $visitor->visitUnaryMinus($this->node);
             case \ast\AST_UNARY_OP:

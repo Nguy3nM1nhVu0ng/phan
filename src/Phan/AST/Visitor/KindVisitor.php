@@ -321,6 +321,11 @@ interface KindVisitor
     public function visitType(Node $node);
 
     /**
+     * Visit a node with kind `\ast\AST_NULLABLE_TYPE`
+     */
+    public function visitNullableType(Node $node);
+
+    /**
      * Visit a node with kind `\ast\AST_UNARY_MINUS`
      */
     public function visitUnaryMinus(Node $node);

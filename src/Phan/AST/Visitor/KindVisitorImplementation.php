@@ -332,6 +332,11 @@ abstract class KindVisitorImplementation implements KindVisitor
         return $this->visit($node);
     }
 
+    public function visitNullableType(Node $node)
+    {
+        return $this->visit($node);
+    }
+
     public function visitUnaryMinus(Node $node)
     {
         return $this->visit($node);

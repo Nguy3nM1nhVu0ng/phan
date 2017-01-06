@@ -7,12 +7,29 @@ abstract class NativeType extends Type
 {
     const NAME = '';
 
-    public static function instance()
+    /**
+     * @param bool $is_nullable
+     * An optional parameter, which if true returns a
+     * nullable instance of this native type
+     *
+     * @return static
+     */
+    public static function instance(bool $is_nullable)
     {
+        if ($is_nullable) {
+            static $nullable_instance = null;
+
+            if (empty($nullable_instance)) {
+                $nullable_instance = static::make('\\', static::NAME, [], true);
+            }
+
+            return $nullable_instance;
+        }
+
         static $instance = null;
 
         if (empty($instance)) {
-            $instance = static::make('\\', static::NAME, []);
+            $instance = static::make('\\', static::NAME, [], false);
         }
 
         return $instance;
@@ -32,6 +49,12 @@ abstract class NativeType extends Type
     {
         // Native types can just use their
         // non-fully-qualified names
-        return $this->name;
+        $string = $this->name;
+
+        if ($this->getIsNullable()) {
+            $string = '?' . $string;
+        }
+
+        return $string;
     }
 }

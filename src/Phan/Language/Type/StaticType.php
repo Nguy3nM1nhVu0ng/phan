@@ -7,8 +7,25 @@ final class StaticType extends Type
 {
     const NAME = 'static';
 
-    public static function instance() : Type
+    /**
+     * @param bool $is_nullable
+     * An optional parameter, which if true returns a
+     * nullable instance of this native type
+     *
+     * @return static
+     */
+    public static function instance(bool $is_nullable) : Type
     {
+        if ($is_nullable) {
+            static $nullable_instance = null;
+
+            if (empty($nullable_instance)) {
+                $nullable_instance = static::make('\\', static::NAME, [], true);
+            }
+
+            return $nullable_instance;
+        }
+
         static $instance;
 
         if (empty($instance)) {
@@ -35,8 +52,12 @@ final class StaticType extends Type
 
     public function __toString() : string
     {
-        // Native types can just use their
-        // non-fully-qualified names
-        return $this->name;
+        $string $this->name;
+
+        if ($this->getIsNullable()) {
+            $string = '?' . $string;
+        }
+
+        return $string;
     }
 }
