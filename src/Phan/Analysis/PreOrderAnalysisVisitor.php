@@ -229,6 +229,8 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             );
         }
 
+        assert($function instanceof Func);
+
         $context = $this->context->withScope(
             $function->getInternalScope()
         );
@@ -404,12 +406,12 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         $func->setHasYield(true);
         if ($func->getUnionType()->isEmpty()) {
             $func->setIsReturnTypeUndefined(true);
-            $func->getUnionType()->addUnionType(Type::fromNamespaceAndName('\\', 'Generator')->asUnionType());
+            $func->getUnionType()->addUnionType(Type::fromNamespaceAndName('\\', 'Generator', false)->asUnionType());
         }
         if (!$func->isReturnTypeUndefined()) {
             $func_return_type = $func->getUnionType();
             if (!$func_return_type->canCastToExpandedUnionType(
-                    Type::fromNamespaceAndName('\\', 'Generator')->asUnionType(),
+                    Type::fromNamespaceAndName('\\', 'Generator', false)->asUnionType(),
                     $this->code_base)) {
                 // At least one of the documented return types must
                 // be Generator, Iterable, or Traversable.

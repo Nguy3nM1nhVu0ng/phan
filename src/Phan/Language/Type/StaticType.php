@@ -23,15 +23,17 @@ final class StaticType extends Type
                 $nullable_instance = static::make('\\', static::NAME, [], true);
             }
 
+            assert($nullable_instance instanceof static);
             return $nullable_instance;
         }
 
         static $instance;
 
         if (empty($instance)) {
-            $instance = static::make('\\', static::NAME, []);
+            $instance = static::make('\\', static::NAME, [], false);
         }
 
+        assert($instance instanceof static);
         return $instance;
     }
 
@@ -52,7 +54,7 @@ final class StaticType extends Type
 
     public function __toString() : string
     {
-        $string $this->name;
+        $string = $this->name;
 
         if ($this->getIsNullable()) {
             $string = '?' . $string;

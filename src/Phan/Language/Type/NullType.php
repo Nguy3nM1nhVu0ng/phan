@@ -2,6 +2,7 @@
 namespace Phan\Language\Type;
 
 use Phan\Language\Type;
+use Phan\Language\UnionType;
 
 class NullType extends ScalarType
 {

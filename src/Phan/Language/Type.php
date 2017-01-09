@@ -240,7 +240,8 @@ class Type
         return self::make(
             $type->getNamespace(),
             $type->getName(),
-            $template_parameter_type_list
+            $template_parameter_type_list,
+            $type->getIsNullable()
         );
     }
 
@@ -275,7 +276,8 @@ class Type
             // TODO: is_nullable
             return GenericArrayType::fromElementType(
                 self::fromInternalTypeName(
-                    substr($type_name, 0, $pos)
+                    substr($type_name, 0, $pos),
+                    $is_nullable
                 )
             );
         }
@@ -326,12 +328,17 @@ class Type
      * @return Type
      * A type representing the given namespace and type
      * name.
+     *
+     * @param bool $is_nullable
+     * True if this type can be null, false if it cannot
+     * be null.
      */
     public static function fromNamespaceAndName(
         string $namespace,
-        string $type_name
+        string $type_name,
+        bool  $is_nullable
     ) : Type {
-        return self::make($namespace, $type_name, []);
+        return self::make($namespace, $type_name, [], $is_nullable);
     }
 
     /**
@@ -347,14 +354,11 @@ class Type
     public static function fromFullyQualifiedString(
         string $fully_qualified_string
     ) : Type {
+
         assert(
             !empty($fully_qualified_string),
             "Type cannot be empty"
         );
-
-        if (0 !== strpos($fully_qualified_string, '\\')) {
-            return self::fromInternalTypeName($fully_qualified_string);
-        }
 
         $tuple = self::typeStringComponents($fully_qualified_string);
 
@@ -362,6 +366,13 @@ class Type
         $type_name = $tuple->_1;
         $template_parameter_type_name_list = $tuple->_2;
         $is_nullable = $tuple->_3;
+
+        if (empty($namespace)) {
+            return self::fromInternalTypeName(
+                $fully_qualified_string,
+                $is_nullable
+            );
+        }
 
         // Map the names of the types to actual types in the
         // template parameter type list
@@ -756,10 +767,10 @@ class Type
     public function isArrayLike() : bool
     {
         $array_access_type =
-            Type::make('\\', 'ArrayAccess', []);
+            Type::make('\\', 'ArrayAccess', [], false);
 
         return (
-            $this === ArrayType::instance()
+            $this === ArrayType::instance(false)
             || $this->isGenericArray()
             || $this === $array_access_type
         );
@@ -812,7 +823,8 @@ class Type
             return Type::make(
                 $this->getNamespace(),
                 substr($this->getName(), 0, $pos),
-                $this->template_parameter_type_list
+                $this->template_parameter_type_list,
+                $this->getIsNullable()
             );
         }
 
@@ -830,7 +842,7 @@ class Type
             || $this->getName() == 'mixed'
             || strpos($this->getName(), '[]') !== false
         ) {
-            return ArrayType::instance();
+            return ArrayType::instance(false);
         }
 
         return GenericArrayType::fromElementType($this);

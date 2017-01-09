@@ -255,13 +255,13 @@ class ContextNode
             if (!$union_type->isEmpty()
                 && $union_type->isNativeType()
                 && !$union_type->hasAnyType([
-                    MixedType::instance(),
-                    ObjectType::instance(),
-                    StringType::instance()
+                    MixedType::instance(false),
+                    ObjectType::instance(false),
+                    StringType::instance(false)
                 ])
                 && !(
                     Config::get()->null_casts_as_any_type
-                    && $union_type->hasType(NullType::instance())
+                    && $union_type->hasType(NullType::instance(false))
                 )
             ) {
                 throw new IssueException(

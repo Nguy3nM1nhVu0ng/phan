@@ -855,8 +855,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         // Double check that any classes in the type don't
         // have ArrayAccess
         $array_access_type =
-            Type::fromNamespaceAndName('\\', 'ArrayAccess');
-
+            Type::fromNamespaceAndName('\\', 'ArrayAccess', false);
 
         // Hunt for any types that are viable class names and
         // see if they inherit from ArrayAccess

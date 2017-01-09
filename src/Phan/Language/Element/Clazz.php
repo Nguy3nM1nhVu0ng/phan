@@ -1622,7 +1622,7 @@ class Clazz extends AddressableElement
             new ClassConstant(
                 $this->getContext(),
                 'class',
-                StringType::instance()->asUnionType(),
+                StringType::instance(false)->asUnionType(),
                 0,
                 FullyQualifiedClassConstantName::make(
                     $this->getFQSEN(),
