@@ -1,0 +1,7 @@
+%s:2 PhanTypeMissingReturn Method \f0 is declared to return string but has no return value
+%s:4 PhanTypeMismatchReturn Returning type int but f1() is declared to return ?string
+%s:13 PhanTypeMismatchArgument Argument 1 (name) is int but \f3() takes ?string defined at %s:11
+%s:26 PhanTypeMismatchReturn Returning type int but f5() is declared to return ?string
+%s:32 PhanTypeMismatchReturn Returning type string[] but f7() is declared to return ?string
+%s:35 PhanTypeMismatchReturn Returning type array but f8() is declared to return ?string
+%s:41 PhanRedefineFunction Function f9 defined at nullable.php:41 was previously defined at %s:38

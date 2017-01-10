@@ -10,6 +10,7 @@ use Phan\Language\Type\CallableType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
+use Phan\Language\Type\IterableType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
@@ -308,6 +309,8 @@ class Type
                 return StringType::instance($is_nullable);
             case 'void':
                 return VoidType::instance($is_nullable);
+            case 'iterable':
+                return IterableType::instance($is_nullable);
             case 'static':
                 return StaticType::instance($is_nullable);
         }
@@ -508,29 +511,31 @@ class Type
             // Check to see if it's a builtin type
             switch (strtolower(self::canonicalNameFromName($type_name))) {
                 case 'array':
-                    return \Phan\Language\Type\ArrayType::instance($is_nullable);
+                    return ArrayType::instance($is_nullable);
                 case 'bool':
-                    return \Phan\Language\Type\BoolType::instance($is_nullable);
+                    return BoolType::instance($is_nullable);
                 case 'callable':
-                    return \Phan\Language\Type\CallableType::instance($is_nullable);
+                    return CallableType::instance($is_nullable);
                 case 'float':
-                    return \Phan\Language\Type\FloatType::instance($is_nullable);
+                    return FloatType::instance($is_nullable);
                 case 'int':
-                    return \Phan\Language\Type\IntType::instance($is_nullable);
+                    return IntType::instance($is_nullable);
                 case 'mixed':
-                    return \Phan\Language\Type\MixedType::instance($is_nullable);
+                    return MixedType::instance($is_nullable);
                 case 'null':
-                    return \Phan\Language\Type\NullType::instance($is_nullable);
+                    return NullType::instance($is_nullable);
                 case 'object':
-                    return \Phan\Language\Type\ObjectType::instance($is_nullable);
+                    return ObjectType::instance($is_nullable);
                 case 'resource':
-                    return \Phan\Language\Type\ResourceType::instance($is_nullable);
+                    return ResourceType::instance($is_nullable);
                 case 'string':
-                    return \Phan\Language\Type\StringType::instance($is_nullable);
+                    return StringType::instance($is_nullable);
                 case 'void':
-                    return \Phan\Language\Type\VoidType::instance($is_nullable);
+                    return VoidType::instance($is_nullable);
+                case 'iterable':
+                    return IterableType::instance($is_nullable);
                 case 'static':
-                    return \Phan\Language\Type\StaticType::instance($is_nullable);
+                    return StaticType::instance($is_nullable);
             }
         }
 

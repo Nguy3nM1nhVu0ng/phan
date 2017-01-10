@@ -895,6 +895,11 @@ class ContextNode
             $lnode = $temp;
         }
 
+        // Strings can have DIMs, it turns out.
+        if (!($temp instanceof Node)) {
+            return;
+        }
+
         if (!($temp->kind == \ast\AST_PROP
             || $temp->kind == \ast\AST_STATIC_PROP
         )) {
