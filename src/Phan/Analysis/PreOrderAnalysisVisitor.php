@@ -490,15 +490,19 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      */
     public function visitForeach(Node $node) : Context
     {
-        if ($node->children['value']->kind == \ast\AST_LIST) {
+        if ($node->children['value']->kind == \ast\AST_ARRAY) {
             foreach ($node->children['value']->children ?? [] as $child_node) {
+
+                $key_node = $child_node->children['key'] ?? null;
+                $value_node = $child_node->children['value'] ?? null;
+
                 // for syntax like: foreach ([] as list(, $a));
-                if ($child_node === null) {
+                if ($value_node === null) {
                     continue;
                 }
 
                 $variable = Variable::fromNodeInContext(
-                    $child_node,
+                    $value_node,
                     $this->context,
                     $this->code_base,
                     false
@@ -580,7 +584,8 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             $union_type = UnionTypeVisitor::unionTypeFromClassNode(
                 $this->code_base,
                 $this->context,
-                $node->children['class']
+                $node->children['class'],
+                true
             );
 
             $class_list = (new ContextNode(

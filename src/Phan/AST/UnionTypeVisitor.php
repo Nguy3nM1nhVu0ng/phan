@@ -1498,6 +1498,25 @@ class UnionTypeVisitor extends AnalysisVisitor
         Context $context,
         $node
     ) : UnionType {
+
+        // If this is a list, build a union type by
+        // recursively visiting the child nodes
+        if ($node instanceof Node
+            && $node->kind == \ast\AST_NAME_LIST
+        ) {
+            $union_type = new UnionType;
+            foreach ($node->children as $child_node) {
+                $union_type->addUnionType(
+                    self::unionTypeFromClassNode(
+                        $code_base,
+                        $context,
+                        $child_node
+                    )
+                );
+            }
+            return $union_type;
+        }
+
         // For simple nodes or very complicated nodes,
         // recurse
         if (!($node instanceof \ast\Node)
