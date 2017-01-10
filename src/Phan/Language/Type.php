@@ -1042,7 +1042,7 @@ class Type
             return true;
         }
 
-        $d_non_nullable = $s;
+        $d_non_nullable = $d;
         if ('?' === $d[0]) {
             $d_non_nullable = substr($d,1);
         }
@@ -1225,8 +1225,9 @@ class Type
         if (preg_match('/' . self::type_regex. '/', $type_string, $match)) {
             $type_string = $match[1];
 
+            // Rip out the nullability indicator if it
+            // exists and note its nullability
             $is_nullable = ($match[2] ?? '') == '?';
-
             if ($is_nullable) {
                 $type_string = substr($type_string, 1);
             }
@@ -1234,10 +1235,9 @@ class Type
             // If we have a generic array symbol '[]', append that back
             // on to the type string
             if (isset($match[12])) {
-
                 // Figure out the dimensionality of the type array
                 $gmatch = [];
-                if (preg_match('/\[[\]\[]*\]/', $type_string, $gmatch)) {
+                if (preg_match('/\[[\]\[]*\]/', $match[0], $gmatch)) {
                     $type_string .= $gmatch[0];
                 }
             }

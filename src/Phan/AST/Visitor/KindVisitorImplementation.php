@@ -217,11 +217,6 @@ abstract class KindVisitorImplementation implements KindVisitor
         return $this->visit($node);
     }
 
-    public function visitList(Node $node)
-    {
-        return $this->visit($node);
-    }
-
     public function visitMagicConst(Node $node)
     {
         return $this->visit($node);

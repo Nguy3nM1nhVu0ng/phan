@@ -165,19 +165,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitList(Node $node) : Context
-    {
-        return $this->context;
-    }
-
-    /**
-     * @param Node $node
-     * A node to parse
-     *
-     * @return Context
-     * A new or an unchanged context resulting from
-     * parsing the node
-     */
     public function visitIfElem(Node $node) : Context
     {
         return $this->context;

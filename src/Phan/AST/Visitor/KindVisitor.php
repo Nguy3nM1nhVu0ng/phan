@@ -206,11 +206,6 @@ interface KindVisitor
     public function visitInstanceof(Node $node);
 
     /**
-     * Visit a node with kind `\ast\AST_LIST`
-     */
-    public function visitList(Node $node);
-
-    /**
      * Visit a node with kind `\ast\AST_MAGIC_CONST`
      */
     public function visitMagicConst(Node $node);
