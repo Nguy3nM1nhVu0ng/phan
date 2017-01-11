@@ -274,7 +274,6 @@ class Type
         // If this is a generic type (like int[]), return
         // a generic of internal types.
         if (false !== ($pos = strrpos($type_name, '[]'))) {
-            // TODO: is_nullable
             return GenericArrayType::fromElementType(
                 self::fromInternalTypeName(
                     substr($type_name, 0, $pos),
@@ -501,42 +500,8 @@ class Type
             );
         }
 
-        // TODO: Need to pass $is_nullable
-
-        if ($is_generic_array_type
-           && self::isNativeTypeString($type_name)
-        ) {
+        if (self::isInternalTypeString($type_name)) {
             return self::fromInternalTypeName($type_name, $is_nullable);
-        } else {
-            // Check to see if it's a builtin type
-            switch (strtolower(self::canonicalNameFromName($type_name))) {
-                case 'array':
-                    return ArrayType::instance($is_nullable);
-                case 'bool':
-                    return BoolType::instance($is_nullable);
-                case 'callable':
-                    return CallableType::instance($is_nullable);
-                case 'float':
-                    return FloatType::instance($is_nullable);
-                case 'int':
-                    return IntType::instance($is_nullable);
-                case 'mixed':
-                    return MixedType::instance($is_nullable);
-                case 'null':
-                    return NullType::instance($is_nullable);
-                case 'object':
-                    return ObjectType::instance($is_nullable);
-                case 'resource':
-                    return ResourceType::instance($is_nullable);
-                case 'string':
-                    return StringType::instance($is_nullable);
-                case 'void':
-                    return VoidType::instance($is_nullable);
-                case 'iterable':
-                    return IterableType::instance($is_nullable);
-                case 'static':
-                    return StaticType::instance($is_nullable);
-            }
         }
 
         // Things like `self[]` or `$this[]`
@@ -663,9 +628,12 @@ class Type
      */
     public function withIsNullable(bool $is_nullable) : Type
     {
-        $type = clone($this);
-        $type->is_nullable = $is_nullable;
-        return $type;
+        return self::make(
+            $this->getNamespace(),
+            $this->getName(),
+            $this->getTemplateParameterTypeList(),
+            $is_nullable
+        );
     }
 
     /**
@@ -685,24 +653,24 @@ class Type
      * @see \Phan\Deprecated\Util::is_native_type
      * Formerly `function is_native_type`
      */
-    private static function isNativeTypeString(string $type_name) : bool
+    private static function isInternalTypeString(string $type_name) : bool
     {
         return in_array(
             str_replace('[]', '', strtolower($type_name)),
             [
-                'int',
-                'float',
-                'bool',
-                'true',
-                'string',
-                'closure',
-                'callable',
                 'array',
+                'bool',
+                'callable',
+                'float',
+                'int',
+                'iterable',
+                'mixed',
                 'null',
                 'object',
                 'resource',
-                'mixed',
-                'void'
+                'static',
+                'string',
+                'void',
             ]
         );
     }
@@ -766,6 +734,20 @@ class Type
 
     /**
      * @return bool
+     * True if this type is iterable.
+     */
+    public function isIterable() : bool
+    {
+        return (
+            $this === ArrayType::instance(false)
+            || $this === IterableType::instance(false)
+            || $this === ArrayType::instance(true)
+            || $this === IterableType::instance(true)
+        );
+    }
+
+    /**
+     * @return bool
      * True if this type is array-like (is of type array, is
      * a generic array, or implements ArrayAccess).
      */
@@ -775,7 +757,7 @@ class Type
             Type::make('\\', 'ArrayAccess', [], false);
 
         return (
-            $this === ArrayType::instance(false)
+            $this->isIterable()
             || $this->isGenericArray()
             || $this === $array_access_type
         );
@@ -988,7 +970,16 @@ class Type
         });
     }
 
-    public function isSubclassOf(CodeBase $code_base, Type $parent)
+    /**
+     * @param CodeBase $code_base
+     *
+     * @param Type $parent
+     *
+     * @return bool
+     * True if this type represents a class which is a sub-type of
+     * the class represented by the passed type.
+     */
+    public function isSubclassOf(CodeBase $code_base, Type $parent) : bool
     {
         $fqsen = $this->asFQSEN();
         assert($fqsen instanceof FullyQualifiedClassName);
@@ -1014,22 +1005,9 @@ class Type
      */
     public function canCastToType(Type $type) : bool
     {
+        // Check to see if we have an exact object match
         if ($this === $type) {
             return true;
-        }
-
-        $s = strtolower((string)$this);
-        $d = strtolower((string)$type);
-
-        $s_is_generic_array = $this->isGenericArray();
-        $d_is_generic_array = $type->isGenericArray();
-
-        if ($s[0]=='\\') {
-            $s = substr($s, 1);
-        }
-
-        if ($d[0]=='\\') {
-            $d = substr($d, 1);
         }
 
         // A nullable type cannot cast to a non-nullable type
@@ -1037,71 +1015,45 @@ class Type
             return false;
         }
 
-        // Null can always cast to any nullable type
-        if ($s === 'null' && $type->getIsNullable()) {
-            return true;
+        // Test to see if we can cast to the non-nullable version
+        // of the target type.
+        return $this->canCastToNonNullableType(
+            $type->getIsNullable()
+            ? $type->withIsNullable(false)
+            : $type
+        );
+    }
+
+    /**
+     * @return bool
+     * True if this Type can be cast to the given Type
+     * cleanly
+     */
+    protected function canCastToNonNullableType(Type $type) : bool
+    {
+
+        // TODO: All of this is nonsense and can probably be
+        //       refactored to not be nonsense.
+
+        $s = strtolower((string)$this);
+        $d = strtolower((string)$type);
+
+        if ($s[0] == '\\') {
+            $s = substr($s, 1);
         }
 
-        $d_non_nullable = $d;
-        if ('?' === $d[0]) {
-            $d_non_nullable = substr($d,1);
-        }
-
-        if ($s===$d_non_nullable) {
-            return true;
-        }
-
-        if (Config::get()->scalar_implicit_cast) {
-            if ($type->isScalar() && $this->isScalar()) {
-                return true;
-            }
-        }
-
-        if ($s_is_generic_array && $d_is_generic_array) {
-            return $this->genericArrayElementType()
-                ->canCastToType($type->genericArrayElementType());
-        }
-
-        if ($s==='int' && $d==='float') {
-            return true; // int->float is ok
-        }
-
-        if (($s==='array'
-            || $s==='string'
-            || $s_is_generic_array
-            || $s==='closure')
-            && $d==='callable'
-        ) {
-            return true;
-        }
-
-        if ($s === 'object'
-            && !$type->isScalar()
-            && $d!=='array'
-        ) {
-            return true;
+        if ($d[0] == '\\') {
+            $d = substr($d, 1);
         }
 
         if ($d === 'object' &&
-            !$this->isScalar()
-            && $s!=='array'
+            !$this->isNativeType()
+            && $s !== 'array'
         ) {
             return true;
         }
 
-        if ($s_is_generic_array
-            && ($d == 'array' || $d == 'arrayaccess')
-        ) {
-            return true;
-        }
-
-        if ($d_is_generic_array
-            && $s==='array'
-        ) {
-            return true;
-        }
-
-        if ($s === 'callable' && $d === 'closure') {
+        if ($s === 'closure' && $d === 'callable') {
             return true;
         }
 

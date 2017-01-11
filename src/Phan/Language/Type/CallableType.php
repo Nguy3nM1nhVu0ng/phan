@@ -2,6 +2,7 @@
 namespace Phan\Language\Type;
 
 use Phan\Language\FQSEN;
+use Phan\Language\Type;
 
 class CallableType extends NativeType
 {
@@ -41,4 +42,26 @@ class CallableType extends NativeType
 
         return parent::asFQSEN();
     }
+
+    /**
+     * @return bool
+     * True if this Type can be cast to the given Type
+     * cleanly
+     */
+    protected function canCastToNonNullableType(Type $type) : bool
+    {
+        $d = strtolower((string)$type);
+        if ($d[0] == '\\') {
+            $d = substr($d, 1);
+        }
+
+        // TODO: you can have a callable that isn't a closure
+        //       This is wrong
+        if ($d === 'closure') {
+            return true;
+        }
+
+        return parent::canCastToNonNullableType($type);
+    }
+
 }

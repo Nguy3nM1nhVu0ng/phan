@@ -38,6 +38,26 @@ class NullType extends ScalarType
     }
 
     /**
+     * @return bool
+     * True if this Type can be cast to the given Type
+     * cleanly
+     */
+    public function canCastToType(Type $type) : bool
+    {
+        // Check to see if we have an exact object match
+        if ($this === $type) {
+            return true;
+        }
+
+        // A nullable type cannot cast to a non-nullable type
+        if ($type->getIsNullable()) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * @param bool $is_nullable
      * Set to true if the type should be nullable, else pass
      * false

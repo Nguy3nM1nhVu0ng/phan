@@ -24,6 +24,33 @@ class GenericArrayType extends ArrayType
     }
 
     /**
+     * @return bool
+     * True if this Type can be cast to the given Type
+     * cleanly
+     */
+    protected function canCastToNonNullableType(Type $type) : bool
+    {
+        if ($type instanceof GenericArrayType) {
+            return $this->genericArrayElementType()
+                ->canCastToType($type->genericArrayElementType());
+        }
+
+        if ($type->isArrayLike()) {
+            return true;
+        }
+
+        $d = strtolower((string)$type);
+        if ($d[0] == '\\') {
+            $d = substr($d, 1);
+        }
+        if ($d === 'callable') {
+            return true;
+        }
+
+        return parent::canCastToNonNullableType($type);
+    }
+
+    /**
      * @param Type $type
      * The element type for an array.
      *
