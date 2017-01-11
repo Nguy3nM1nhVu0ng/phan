@@ -826,9 +826,11 @@ class Type
      */
     public function asGenericArrayType() : Type
     {
-        if ($this->getName() == 'array'
-            || $this->getName() == 'mixed'
-            || strpos($this->getName(), '[]') !== false
+        if (!($this instanceof GenericArrayType)
+            && (
+                $this->getName() == 'array'
+                || $this->getName() == 'mixed'
+            )
         ) {
             return ArrayType::instance(false);
         }

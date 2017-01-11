@@ -490,6 +490,17 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      */
     public function visitForeach(Node $node) : Context
     {
+        $expression_union_type = UnionType::fromNode(
+            $this->context,
+            $this->code_base,
+            $node->children['expr']
+        );
+
+        // Filter out the non-generic types of the
+        // expression
+        $non_generic_expression_union_type =
+            $expression_union_type->genericArrayElementTypes();
+
         if ($node->children['value']->kind == \ast\AST_ARRAY) {
             foreach ($node->children['value']->children ?? [] as $child_node) {
 
@@ -509,6 +520,21 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                     false
                 );
 
+                // If we were able to figure out the type and its
+                // a generic type, then set its element types as
+                // the type of the variable
+                if (!$non_generic_expression_union_type->isEmpty()) {
+                    $second_order_non_generic_expression_union_type =
+                        $non_generic_expression_union_type->genericArrayElementTypes();
+
+                    if (!$second_order_non_generic_expression_union_type->isEmpty()) {
+                        $variable->setUnionType(
+                            $second_order_non_generic_expression_union_type
+                        );
+                    }
+
+                }
+
                 $this->context->addScopeVariable($variable);
             }
 
@@ -523,22 +549,12 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                 false
             );
 
-            // Get the type of the node from the left side
-            $type = UnionType::fromNode(
-                $this->context,
-                $this->code_base,
-                $node->children['expr']
-            );
-
-            // Filter out the non-generic types of the
-            // expression
-            $non_generic_type = $type->genericArrayElementTypes();
 
             // If we were able to figure out the type and its
             // a generic type, then set its element types as
             // the type of the variable
-            if (!$non_generic_type->isEmpty()) {
-                $variable->setUnionType($non_generic_type);
+            if (!$non_generic_expression_union_type->isEmpty()) {
+                $variable->setUnionType($non_generic_expression_union_type);
             }
 
             // Add the variable to the scope
