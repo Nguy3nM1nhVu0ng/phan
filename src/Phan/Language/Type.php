@@ -657,7 +657,7 @@ class Type
     private static function isInternalTypeString(string $type_name) : bool
     {
         return in_array(
-            str_replace('[]', '', strtolower(self::canonicalNameFromname($type_name))),
+            self::canonicalNameFromname(str_replace('[]', '', strtolower($type_name))),
             [
                 'array',
                 'bool',
