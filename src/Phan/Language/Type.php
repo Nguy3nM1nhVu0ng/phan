@@ -657,7 +657,7 @@ class Type
     private static function isInternalTypeString(string $type_name) : bool
     {
         return in_array(
-            self::canonicalNameFromname(str_replace('[]', '', strtolower($type_name))),
+            self::canonicalNameFromName(str_replace('[]', '', strtolower($type_name))),
             [
                 'array',
                 'bool',
@@ -1018,13 +1018,13 @@ class Type
 
         // Get a non-null version of the type we're comparing
         // against.
-        $type = $type->getIsNullable()
-            ? $type->withIsNullable(false)
-            : $type;
+        if ($type->getIsNullable()) {
+            $type = $type->withIsNullable(false);
 
-        // Check one more time to see if the types are equal
-        if ($this === $type) {
-            return true;
+            // Check one more time to see if the types are equal
+            if ($this === $type) {
+                return true;
+            }
         }
 
         // Test to see if we can cast to the non-nullable version
@@ -1039,7 +1039,6 @@ class Type
      */
     protected function canCastToNonNullableType(Type $type) : bool
     {
-
         // TODO: All of this is nonsense and can probably be
         //       refactored to not be nonsense.
 
@@ -1058,6 +1057,10 @@ class Type
             !$this->isNativeType()
             && $s !== 'array'
         ) {
+            return true;
+        }
+
+        if ($s === 'traversable' && $d === 'iterable') {
             return true;
         }
 
@@ -1154,7 +1157,6 @@ class Type
         string $name
     ) : string {
         static $map = [
-            'NULL'     => 'null',
             'boolean'  => 'bool',
             'callback' => 'callable',
             'double'   => 'float',
