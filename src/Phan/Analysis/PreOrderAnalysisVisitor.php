@@ -500,6 +500,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                 if ($value_node === null) {
                     continue;
                 }
+                assert($value_node instanceof Node);
 
                 $variable = Variable::fromNodeInContext(
                     $value_node,
@@ -584,8 +585,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             $union_type = UnionTypeVisitor::unionTypeFromClassNode(
                 $this->code_base,
                 $this->context,
-                $node->children['class'],
-                true
+                $node->children['class']
             );
 
             $class_list = (new ContextNode(

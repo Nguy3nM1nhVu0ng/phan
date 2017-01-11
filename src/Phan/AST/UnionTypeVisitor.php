@@ -1505,7 +1505,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             && $node->kind == \ast\AST_NAME_LIST
         ) {
             $union_type = new UnionType;
-            foreach ($node->children as $child_node) {
+            foreach ($node->children ?? [] as $child_node) {
                 $union_type->addUnionType(
                     self::unionTypeFromClassNode(
                         $code_base,

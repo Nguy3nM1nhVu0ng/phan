@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Type;
 
+use Phan\Config;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 
@@ -51,6 +52,10 @@ class NullType extends ScalarType
 
         // A nullable type cannot cast to a non-nullable type
         if ($type->getIsNullable()) {
+            return true;
+        }
+
+        if (Config::get()->null_casts_as_any_type) {
             return true;
         }
 

@@ -307,6 +307,7 @@ class Type
             case 'string':
                 return StringType::instance($is_nullable);
             case 'void':
+                // TODO: This can't be nullable, right?
                 return VoidType::instance($is_nullable);
             case 'iterable':
                 return IterableType::instance($is_nullable);
@@ -656,7 +657,7 @@ class Type
     private static function isInternalTypeString(string $type_name) : bool
     {
         return in_array(
-            str_replace('[]', '', strtolower($type_name)),
+            str_replace('[]', '', strtolower(self::canonicalNameFromname($type_name))),
             [
                 'array',
                 'bool',
@@ -1015,13 +1016,20 @@ class Type
             return false;
         }
 
+        // Get a non-null version of the type we're comparing
+        // against.
+        $type = $type->getIsNullable()
+            ? $type->withIsNullable(false)
+            : $type;
+
+        // Check one more time to see if the types are equal
+        if ($this === $type) {
+            return true;
+        }
+
         // Test to see if we can cast to the non-nullable version
         // of the target type.
-        return $this->canCastToNonNullableType(
-            $type->getIsNullable()
-            ? $type->withIsNullable(false)
-            : $type
-        );
+        return $this->canCastToNonNullableType($type);
     }
 
     /**
@@ -1162,7 +1170,7 @@ class Type
      * @param string $type_string
      * Any type string such as 'int' or 'Set<int>'
      *
-     * @return Tuple3<string,string,array>
+     * @return Tuple4<string,string,array,bool>
      * A pair with the 0th element being the namespace and the first
      * element being the type name.
      */
