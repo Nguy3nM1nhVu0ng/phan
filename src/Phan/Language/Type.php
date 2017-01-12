@@ -1035,74 +1035,34 @@ class Type
     }
 
     /**
+     * @param Type $type
+     * A Type which is not nullable. This constraint is not
+     * enforced, so be careful.
+     *
      * @return bool
      * True if this Type can be cast to the given Type
      * cleanly
      */
     protected function canCastToNonNullableType(Type $type) : bool
     {
-        // TODO: All of this is nonsense and can probably be
-        //       refactored to not be nonsense.
-
-        $s = strtolower((string)$this);
-        $d = strtolower((string)$type);
-
-        if ($s[0] == '\\') {
-            $s = substr($s, 1);
-        }
-
-        if ($d[0] == '\\') {
-            $d = substr($d, 1);
-        }
-
-        if ($d === 'object' &&
-            !$this->isNativeType()
-            && $s !== 'array'
+        if ($type instanceof ObjectType
+            && !$this->isNativeType()
+            && !($this instanceof ArrayType)
         ) {
             return true;
         }
 
-        if ($s === 'traversable' && $d === 'iterable') {
-            return true;
-        }
+        // A matrix of allowable type conversions
+        static $matrix = [
+            '\Traversable' => [
+                'iterable' => true,
+            ],
+            '\Closure' => [
+                'callable' => true,
+            ],
+        ];
 
-        if ($s === 'closure' && $d === 'callable') {
-            return true;
-        }
-
-        if (($pos = strrpos($d, '\\')) !== false) {
-            if ('\\' !== $this->getNamespace()) {
-                if (trim(
-                    $this->getNamespace().'\\'.$s,
-                    '\\'
-                ) == $d
-                ) {
-                    return true;
-                }
-            } else {
-                if (substr($d, $pos+1) === $s) {
-                    return true; // Lazy hack, but...
-                }
-            }
-        }
-
-        if (($pos = strrpos($s, '\\')) !== false) {
-            if ('\\' !== $type->getNamespace()) {
-                if (trim(
-                    $type->getNamespace().'\\'.$d,
-                    '\\'
-                ) == $s
-                ) {
-                    return true;
-                }
-            } else {
-                if (substr($s, $pos+1) === $d) {
-                    return true; // Lazy hack, but...
-                }
-            }
-        }
-
-        return false;
+        return $matrix[(string)$this][(string)$type] ?? false;
     }
 
     /**

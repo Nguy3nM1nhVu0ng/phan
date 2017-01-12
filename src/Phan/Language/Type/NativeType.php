@@ -55,11 +55,6 @@ abstract class NativeType extends Type
      */
     protected function canCastToNonNullableType(Type $type) : bool
     {
-        // Check to see if we have an exact object match
-        if ($this === $type) {
-            return true;
-        }
-
         if (!($type instanceof NativeType)
             || $this instanceof GenericArrayType
             || $type instanceof GenericArrayType
